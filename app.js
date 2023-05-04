@@ -7,9 +7,11 @@ app.use(express.json());
 app.use(cors());
 require('./database/db');
 
+const preguntas = require('./routes/preguntas');
 const users = require('./routes/users');
 
 app.use('/users', users);
+app.use('/preguntas', preguntas);
 
 app.listen(port, () =>  {
     console.log(`Estamos trabajando en el puerto ${port}`);
