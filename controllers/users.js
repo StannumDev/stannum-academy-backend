@@ -1,6 +1,7 @@
 const User = require('../model/users');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
+const moment = require('moment');
 require('dotenv').config();
 const claveToken = process.env.CLAVE;
 
@@ -27,24 +28,6 @@ const getUserEspecifico = async (req, res) => {
       }
     }
 
-const crearUser = async (req, res) => {
-    const { name, email, password } = req.body;
-    const userExistentesEmail = await User.findOne({"email": email})
-    if (userExistentesEmail) {
-        res.status(206).send(`Este email ya esta en uso.`)
-    } else {
-    const role = 'usuario'
-    const nuevoUser = new User({
-        name,
-        email,
-        password,
-        role
-    })
-    await nuevoUser.save()
-    res.status(200).send(`Se creo el usuario con éxito.`)
-    }
-}
-
 const deleteUser = async (req, res) => {
     const { id } = req.body
     if (id) {
@@ -55,6 +38,91 @@ const deleteUser = async (req, res) => {
     }
 
 }
+
+const crearUser = async (req, res) => {
+
+    const { email } = req.body;
+  
+    const userExistentesEmail = await User.findOne({ email });
+    if (userExistentesEmail) {
+        res.status(206).send('Este email ya está en uso.');
+    } else {
+        const password = generateRandomPassword();
+        const role = 'member';
+        const status = 'active';        
+        const startDate = moment().format('DD/MM/YYYY');
+        const totalScore = 0;
+        const welcomeViewed = true;
+        const questionnaire1StartEnabled = true;
+        const questionnaire1FinalEnabled = false;
+    
+        const nuevoUser = new User({
+            email,
+            password,
+            role,
+            startDate,
+            totalScore,
+            welcomeViewed,
+            status,
+            questionnaire1StartEnabled,
+            questionnaire1FinalEnabled,
+            dominioDirectivoTestInicial: getGenericInitialValueForSection(),
+            dominioDirectivoTestFinal: getGenericInitialValueForSection(),
+        });
+    
+        await nuevoUser.save();
+        res.status(200).json(nuevoUser).send('Se creó el usuario con éxito.');
+    }
+};
+
+const generateRandomPassword = () =>{
+
+    const length = 10;
+    const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let password = '';
+  
+    for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        password += characters.charAt(randomIndex);
+    }
+  
+    return password;
+}
+
+const getGenericInitialValueForSection = () => {
+
+    return {
+        question1: undefined,
+        question1Justification: undefined,
+        question2: undefined,
+        question2Justification: undefined,
+        question3: undefined,
+        question3Justification: undefined,
+        question4: undefined,
+        question4Justification: undefined,
+        question5: undefined,
+        question5Justification: undefined,
+        question6: undefined,
+        question6Justification: undefined,
+        question7: undefined,
+        question8: undefined,
+        question9: undefined,
+        question10: undefined,
+        question11: undefined,
+        question12: undefined,
+        question13: undefined,
+        question14: undefined,
+        question14Justification: undefined,
+        question15: undefined,
+        question15Justification: undefined,
+        sectionScore: undefined,
+    };
+} 
+
+
+
+
+
 
 const patchUser = async (req, res) => {
 
