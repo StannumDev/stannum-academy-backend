@@ -9,7 +9,7 @@ require('./database/db');
 
 const users = require('./routes/users');
 
-app.use('/users', users);
+app.use('/', users);
 
 app.listen(port, () =>  {
     console.log(`Working on port ${port}`);

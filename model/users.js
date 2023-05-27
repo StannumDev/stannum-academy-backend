@@ -12,7 +12,6 @@ const user = new Schema({
   rankingPosition: String,
   totalScore: String,
   biography: String,
-  profilePicture: String,
   welcomeViewed: Boolean,
   status: String,
   role: String,

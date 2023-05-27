@@ -1,15 +1,16 @@
 const express = require('express');
 const route = express.Router();
-const { crearUser, getUser, patchUser, deleteUser, getUserEspecifico, loginUser, restablecerContraseña } = require('../controllers/users');
+const { createUser, getUser, patchUser, deleteUser, getUserEspecifico, loginUser, passwordRecovery, changePassword } = require('../controllers/users');
 const { jwtValidator } = require('../middleware/jwt')
 
 
-route.get('/obtener-users', getUser);
-route.get('/obtener-user/:id', getUserEspecifico);
-route.post('/crear-user', crearUser)
-route.patch(`/editar-user`, patchUser);
-route.delete(`/eliminar-user`, deleteUser);
+route.get('/get-users', getUser);
+route.post('/get-user/:token', getUserEspecifico);
 route.post(`/login-user`, loginUser);
-route.patch(`/restablecer-password`, restablecerContraseña);
+route.post('/create-user', createUser)
+route.patch(`/patch-user`, patchUser);
+route.delete(`/delete-user`, deleteUser);
+route.post(`/password-recovery`, passwordRecovery);
+route.post('/password-recovery/new-password', changePassword)
 
 module.exports = route;
