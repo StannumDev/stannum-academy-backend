@@ -373,7 +373,7 @@ const sendEmailNewUser = async ( email, password ) => {
                     <p style="font-size: 16px; color: #3A3A3A;">Se ha generado una contraseña para que pueda acceder al sitio. Luego podrá cambiarla.</p>
                     <p style="font-size: 20px; color: #3A3A3A;">Su contraseña es: ${password}</p>
                     <p style="font-size: 16px; color: #3A3A3A;">Puede ingresar al sitio haciendo click en el botón:</p>
-                    <a href="https://trello.com/b/WJbCSJMv/desarrollo-web" style="display: inline-block; padding: 10px 20px; background-color: #67CCB9; color: #fff; text-decoration: none; font-weight: bold; border-radius: 5px;">Ir al sitio</a>    
+                    <a href="https://pruebastannumacademyinterna.netlify.app/Iniciar-sesion" style="display: inline-block; padding: 10px 20px; background-color: #67CCB9; color: #fff; text-decoration: none; font-weight: bold; border-radius: 5px;">Ir al sitio</a>    
                   </div>
                 `,
               });            
@@ -431,7 +431,7 @@ const passwordRecovery = async (req, res) => {
                 <div style="width: 100%; text-align: center; background-color: #DEDEDE; padding: 2rem;">
                   <p style="font-size: 20px; color: #3A3A3A;">Se ha generado un enlace para que puedas restaurar tu contraseña en STANNUM Academy.</p>
                   <p style="font-size: 16px; color: #3A3A3A;">Haz click en el botón de abajo para ir al enlace.</p>
-                  <a href="https://trello.com/b/WJbCSJMv/desarrollo-web" style="display: inline-block; padding: 10px 20px; background-color: #67CCB9; color: #fff; text-decoration: none; font-weight: bold; border-radius: 5px;">Ir al sitio</a>    
+                  <a href="https://pruebastannumacademyinterna.netlify.app/Recuperar-contrase%C3%B1a/Nueva-contrase%C3%B1a/${token}" style="display: inline-block; padding: 10px 20px; background-color: #67CCB9; color: #fff; text-decoration: none; font-weight: bold; border-radius: 5px;">Ir al sitio</a>    
                 </div>
                 `,
               });
