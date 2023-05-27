@@ -8,8 +8,9 @@ app.use(cors());
 require('./database/db');
 
 const users = require('./routes/users');
+const photos = require('./routes/photos');
 
-app.use('/', users);
+app.use('/', users, photos);
 
 app.listen(port, () =>  {
     console.log(`Working on port ${port}`);
