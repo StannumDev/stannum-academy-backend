@@ -370,7 +370,7 @@ const sendEmailNewUser = async ( email, password ) => {
                   </div>
                   <div style="width: 100%; text-align: center; background-color: #fff; padding: 2rem;">
                     <p style="font-size: 24px; color: #3A3A3A; font-style: bold;">Bienvenido a STANNUM Academy!</p>
-                    <p style="font-size: 16px; color: #3A3A3A;">Se ha generado una contraseña para que pueda acceder al sitio. Luego podrá cambiarla.</p>
+                    <p style="font-size: 16px; color: #3A3A3A;">Se ha generado una contraseña para que pueda acceder al sitio. Luego podrá cambiarla ahí.</p>
                     <p style="font-size: 20px; color: #3A3A3A;">Su contraseña es: ${password}</p>
                     <p style="font-size: 16px; color: #3A3A3A;">Puede ingresar al sitio haciendo click en el botón:</p>
                     <a href="https://pruebastannumacademyinterna.netlify.app/Iniciar-sesion" style="display: inline-block; padding: 10px 20px; background-color: #67CCB9; color: #fff; text-decoration: none; font-weight: bold; border-radius: 5px;">Ir al sitio</a>    
