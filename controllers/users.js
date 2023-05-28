@@ -7,6 +7,8 @@ require('dotenv').config();
 const userTokenSecret = process.env.CLAVE_USER
 const adminTokenSecret = process.env.CLAVE_ADMIN
 const passwordTokenSecret = process.env.CLAVE_PASSWORD_RECOVERY
+const emailUser = process.env.EMAIL_USER
+const emailPassword = process.env.EMAIL_PASSWORD
 
 const getUser = async (req, res) => {
     try {
@@ -27,12 +29,10 @@ const getUserEspecifico = async (req, res) => {
         return res.status(401).json({ message: 'No se encontró el token.' });
       }
   
-      const decodedToken = jwt.verify(token, userTokenSecret);
-      const { user: userToken } = decodedToken;
-      const { _id } = userToken;
+      const { userId } = jwt.verify(token, userTokenSecret);
   
       try {
-        const user = await User.findById(_id);
+        const user = await User.findById(userId);
         if (!user) {
           return res.status(404).json({ message: 'El usuario no existe.' });
         }
@@ -78,11 +78,11 @@ const loginUser = async (req, res) => {
       const user = await User.findOne({ email });
       if (user) {
         if (password === user.password && user.role === 'admin') {
-          const adminToken = jwt.sign({ user }, adminTokenSecret, { expiresIn: '1d' });
-          const token = jwt.sign({ user }, userTokenSecret, { expiresIn: '7d' });
+          const adminToken = jwt.sign({ userId: user._id }, adminTokenSecret, { expiresIn: '1d' });
+          const token = jwt.sign({ userId: user._id }, userTokenSecret, { expiresIn: '7d' });
           return res.status(200).json({ adminToken, token });
         } else if (password === user.password) {
-          const token = jwt.sign({ user }, userTokenSecret, { expiresIn: '7d' });
+          const token = jwt.sign({ userId: user._id }, userTokenSecret, { expiresIn: '7d' });
           return res.status(200).json({ token });
         } else {
           return res.status(206).json({ message: 'Datos incorrectos.' });
@@ -348,32 +348,41 @@ const sendEmailNewUser = async ( email, password ) => {
     if ( email && password ){
         try {
             let transporter = nodemailer.createTransport({
-                host: "smtp.gmail.com",
+                host: "smtp.hostinger.com",
                 port: 465,
                 secure: true,
                 auth: {
-                    user: "stannumdevelopment@gmail.com",
-                    pass: "yhroxynsojajtudi",
+                  user: emailUser,
+                  pass: emailPassword,
                 },
                 tls: {
-                    rejectUnauthorized: false
+                  rejectUnauthorized: false
                 }
             });
         
             let info = await transporter.sendMail({
-                from: '"STANNUM Academy" stannumdevelopment@gmail.com',
+                from: '"STANNUM Academy" no-reply@stannum.com.ar',
                 to: email,
                 subject: "Bienvenido a STANNUM!", 
                 html: `
                   <div style="width: 100%; text-align: center; background-color: #3A3A3A; padding: 2rem; border-bottom: 2px solid #67CCB9; background-attachment: fixed; background-repeat: no-repeat; background-blend-mode: multiply; background-image: url('https://doc-0c-90-docs.googleusercontent.com/docs/securesc/2lc7vs8d0n3e38d02dp61blmfed72min/m74lh5a2v0tudleh37urf8vp7kac8386/1685163075000/07405825733652792889/14585000474494058987/16bwV4nSFRBcfVFNuax3xlv-25LPqH-Xj?ax=ADWCPKB6LiEkrQSHog7bli8wFR9vSUvMOKrN70y6y5ycXjHfTnV5XCbioL07_IPj0phxf76l__e_Va8rVffS-Fo2I83Ij463JqM-Ta-GR2HSTBluqEEnZSLRdwJ3URrWuur0mS1YAB6nSyvlgIXJq--Bk6ipaZ9xXudCHlVfiEbSRphZhoN9fJxIDhr7C1g5LHqSyAWndKoBZ_d7OkRzJO1Nqwxrvc2F8qiInFqwi66KEkabVwESWH1g-184hY7VraTOy2QSiIz7cnkwzrWJH0TTY9SnbBNe1fa2ACFsA2SzG8xwRYd8WhNxM5ywhmhjqwR2Nji6rTgBBi27gPgJy2nJa8Ax7BsPdRMRNinwaeAlrNtrfV0xLJCUo25FnZMcGCewJJQJsaHtiAWnlOhu_96KiCDwNkdqD7tcH0_Nj8-FhjUjl4jCikzOpwmb_F6ny-vG-zm_qp3rr-Jc6gvNiz6WD6AHnyKJd_GcbZcV_3BnqVBy3eiKUTuBsMNHYM9ExUaM_TIMRTUtieL3X03woUE9ZBy-Tp_vgqDFe9CjXkzXH7080597lZjWpzgc_5wM4DTwSK_jxl1x1Q79RBnW7HgYGoeBmZV2kQ7YZdPEEJmRbdNWEb15uYpe1pHvw14dxIuUUReEiy_itJJsDonKHJ86SfVgj9ovqwL68mqrSsfBgUfTuhpY6PBJ9Bb-5XVXIYyDNGhEgMjHh5Ook-ge__SONwLb_C9TDeIkeuNyoppumh1EHW7foujYaUgek-uXP0LkS7-_ZDazjvqPL83WqTSKj9VaKPMfTNFSlK1HX51jnHcToLgO_Ukm1SOXHqpra6fF2jiA_RP7gtgg2fa7fkTm1bSXT0z_TONTjx2N9OS89k_jGdF5VSvAqxiN7fBRcFOO7Jv1X3suzLkbS3j3megwy6vuqDboDroUERvNhoCsomzJrijVsyj44ftz9Rg2b9bYXvRkoFgn9SfiFh7247Q73Hr9vdek9gZQqLvPAec4WdQjk1vVgYSCgTEr5AoOPy_2hvJIQSctFmWDZt6M_N3ZrAWXUwlre4O5DhaMfMY19-rETUgMt6kyFZPYV1eLgXnYoAWLhDbPtiOzClnyJ0GY-HWnApBvgOXmA98C3ez4QsVHqs6o4BEU351Y_WYF-3J6xMwqCticLnsTyC9PMKzA-vhHGP0I&uuid=5c02fc1e-f674-443a-a333-9d4f52f375d8&authuser=0'); background-position: center center;">
                     <img src="https://drive.google.com/uc?export=download&id=1T-hwu10IZ3_kkeyOZIhDUKISgFPAtMTk" alt="Logo" style="width: 200px; height: auto; margin: 20px auto;">
                   </div>
-                  <div style="width: 100%; text-align: center; background-color: #fff; padding: 2rem;">
+                  <div style="width: 100%; text-align: center; background-color: #fff; padding: 2rem; padding-top: 5rem;">
                     <p style="font-size: 24px; color: #3A3A3A; font-style: bold;">Bienvenido a STANNUM Academy!</p>
-                    <p style="font-size: 16px; color: #3A3A3A;">Se ha generado una contraseña para que pueda acceder al sitio. Luego podrá cambiarla ahí.</p>
-                    <p style="font-size: 20px; color: #3A3A3A;">Su contraseña es: ${password}</p>
-                    <p style="font-size: 16px; color: #3A3A3A;">Puede ingresar al sitio haciendo click en el botón:</p>
-                    <a href="https://pruebastannumacademyinterna.netlify.app/Iniciar-sesion" style="display: inline-block; padding: 10px 20px; background-color: #67CCB9; color: #fff; text-decoration: none; font-weight: bold; border-radius: 5px;">Ir al sitio</a>    
+                    <p style="font-size: 16px; color: #3A3A3A;">Se ha generado una contraseña para que puedas acceder al sitio y comenzar tu entrenamiento. Luego podrás cambiarla en la sección "Olvide mi contraseña".</p>
+                    <p style="font-size: 20px; color: #3A3A3A;">Tu contraseña es: ${password}</p>
+                    <p style="font-size: 16px; color: #3A3A3A;">Podés ingresar al sitio haciendo click en este botón:</p>
+                    <a href="https://pruebastannumacademyinterna.netlify.app/Iniciar-sesion" style="margin-bottom: 5rem; display: inline-block; padding: 10px 20px; background-color: #67CCB9; color: #fff; text-decoration: none; font-weight: bold; border-radius: 5px;">Ir al sitio</a>    
+                  </div>
+                  <div style="width: 100%; text-align: center; background-color: #3A3A3A; padding: 2rem; border-top: 4px solid #67CCB9;">
+                    <div style="width: 70%; margin: auto; text-align: center;">
+                      <a href="https://www.instagram.com/stannum.ar/" style="color: #fff; text-decoration: none; display: inline-block; margin-right: 1.5rem;"><img src="https://www.edigitalagency.com.au/wp-content/uploads/new-Instagram-logo-white-glyph.png" alt="Instagram Stannum" style="width:25px;"></a>
+                      <a href="https://www.facebook.com/stannumAR/" style="color: #fff; text-decoration: none; display: inline-block; margin-right: 1.5rem;"><img src="https://www.iconsdb.com/icons/preview/white/facebook-xxl.png" alt="Facebook Stannum" style="width:25px;"></a>
+                      <a href="https://www.youtube.com/@stannumacademy" style="color: #fff; text-decoration: none; display: inline-block; margin-right: 1.5rem;"><img src="http://clipart-library.com/images/dc4LABqni.png" alt="Youtube Stannum" style="width:25px;"></a>
+                      <a href="https://www.linkedin.com/company/stannum-academy/" style="color: #fff; text-decoration: none; display: inline-block; margin-right: 1.5rem;"><img src="https://www.freeiconspng.com/thumbs/linkedin-logo-png/displaying-19-gallery-images-for-linkedin-logo-png-25.png" alt="Linkedin Stannum" style="width:25px;"></a>
+                      <a href="https://www.tiktok.com/@stannum.ar" style="color: #fff; text-decoration: none; display: inline-block;"><img src="https://www.iconsdb.com/icons/preview/white/tiktok-xxl.png" alt="TikTok Stannum" style="width:25px;"></a>
+                    </div>            
                   </div>
                 `,
               });            
@@ -405,15 +414,15 @@ const passwordRecovery = async (req, res) => {
   
       const user = await User.findOne({"email": email})
       if (user) {
-            const tokenNormal = jwt.sign({ user }, passwordTokenSecret, { expiresIn: "1h" })
-            const token = Buffer.from(JSON.stringify(tokenNormal)).toString('base64');
+            const tokenNormal = jwt.sign({ userId: user._id }, passwordTokenSecret, { expiresIn: "1h" })
+            const token = encodeURIComponent(tokenNormal);
             let transporter = nodemailer.createTransport({
-                host: "smtp.gmail.com",
+                host: "smtp.hostinger.com",
                 port: 465,
                 secure: true,
                 auth: {
-                    user: "stannumdevelopment@gmail.com",
-                    pass: "yhroxynsojajtudi",
+                  user: emailUser,
+                  pass: emailPassword,
                 },
                 tls: {
                     rejectUnauthorized: false
@@ -421,17 +430,26 @@ const passwordRecovery = async (req, res) => {
               });
           
               let info = await transporter.sendMail({
-                from: '"STANNUM Academy" stannumdevelopment@gmail.com',
+                from: '"STANNUM Academy" no-reply@stannum.com.ar',
                 to: email,
                 subject: "Olvide mi contraseña", 
                 html: `            
                 <div style="width: 100%; text-align: center; background-color: #3A3A3A; padding: 2rem; border-bottom: 4px solid #67CCB9;">
                   <img src="https://drive.google.com/uc?export=download&id=1T-hwu10IZ3_kkeyOZIhDUKISgFPAtMTk" alt="Logo" style="width: 200px; height: auto; margin: 20px auto;">
                 </div>
-                <div style="width: 100%; text-align: center; background-color: #DEDEDE; padding: 2rem;">
+                <div style="width: 100%; text-align: center; background-color: #DEDEDE; padding: 2rem; padding-top: 5rem;">
                   <p style="font-size: 20px; color: #3A3A3A;">Se ha generado un enlace para que puedas restaurar tu contraseña en STANNUM Academy.</p>
-                  <p style="font-size: 16px; color: #3A3A3A;">Haz click en el botón de abajo para ir al enlace.</p>
-                  <a href="https://pruebastannumacademyinterna.netlify.app/Recuperar-contrase%C3%B1a/Nueva-contrase%C3%B1a/${token}" style="display: inline-block; padding: 10px 20px; background-color: #67CCB9; color: #fff; text-decoration: none; font-weight: bold; border-radius: 5px;">Ir al sitio</a>    
+                  <p style="font-size: 16px; color: #3A3A3A;">Hacé click en el botón de abajo para ir al enlace.</p>
+                  <a href="https://pruebastannumacademyinterna.netlify.app/Recuperar-contrase%C3%B1a/Nueva-contrase%C3%B1a/${token}" style="margin-bottom: 5rem; display: inline-block; padding: 10px 20px; background-color: #67CCB9; color: #fff; text-decoration: none; font-weight: bold; border-radius: 5px;">Ir al sitio</a>    
+                </div>
+                <div style="width: 100%; text-align: center; background-color: #3A3A3A; padding: 2rem; border-top: 4px solid #67CCB9;">
+                  <div style="width: 70%; margin: auto; text-align: center;">
+                    <a href="https://www.instagram.com/stannum.ar/" style="color: #fff; text-decoration: none; display: inline-block; margin-right: 1.5rem;"><img src="https://www.edigitalagency.com.au/wp-content/uploads/new-Instagram-logo-white-glyph.png" alt="Instagram Stannum" style="width:25px;"></a>
+                    <a href="https://www.facebook.com/stannumAR/" style="color: #fff; text-decoration: none; display: inline-block; margin-right: 1.5rem;"><img src="https://www.iconsdb.com/icons/preview/white/facebook-xxl.png" alt="Facebook Stannum" style="width:25px;"></a>
+                    <a href="https://www.youtube.com/@stannumacademy" style="color: #fff; text-decoration: none; display: inline-block; margin-right: 1.5rem;"><img src="http://clipart-library.com/images/dc4LABqni.png" alt="Youtube Stannum" style="width:25px;"></a>
+                    <a href="https://www.linkedin.com/company/stannum-academy/" style="color: #fff; text-decoration: none; display: inline-block; margin-right: 1.5rem;"><img src="https://www.freeiconspng.com/thumbs/linkedin-logo-png/displaying-19-gallery-images-for-linkedin-logo-png-25.png" alt="Linkedin Stannum" style="width:25px;"></a>
+                    <a href="https://www.tiktok.com/@stannum.ar" style="color: #fff; text-decoration: none; display: inline-block;"><img src="https://www.iconsdb.com/icons/preview/white/tiktok-xxl.png" alt="TikTok Stannum" style="width:25px;"></a>
+                  </div>            
                 </div>
                 `,
               });
@@ -449,12 +467,11 @@ const changePassword = async (req, res) => {
     try {
       const { token, password } = req.body;
   
-    const decodedToken = JSON.parse(Buffer.from(token, 'base64').toString());
-    const { user } = jwt.verify(decodedToken, passwordTokenSecret);
-    const { _id } = user;
-    await User.findByIdAndUpdate(_id, { 
-        password 
-    });
+      const decodedToken = decodeURIComponent(token);
+      const { userId } = jwt.verify(decodedToken, passwordTokenSecret);
+      await User.findByIdAndUpdate(userId, { 
+          password 
+      });
   
     res.status(200).json('La contraseña se cambio con éxito.');
     } catch (error) {
