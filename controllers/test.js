@@ -11,6 +11,7 @@ const testSection1 = async (req, res) => {
         const { question1 } = req.body
         const { userId } = jwt.verify(token, userTokenSecret);
         let value;
+        
         // Puntaje de 5 a 89:
         if (question1 == 1) {
             value = Math.floor(Math.random() * 6) + 5;
@@ -19,11 +20,17 @@ const testSection1 = async (req, res) => {
         } else if (question1 == 10) {
             value = Math.floor(Math.random() * 9) + 81;
         }
-        await User.findByIdAndUpdate(userId, {
-            "dominioDirectivoTestInicial.estrategico.question1": question1,
-            "dominioDirectivoTestInicial.estrategico.sectionScore": value,
-        })
-        res.status(200).send(`Se actualizo el usuario con éxito.`)
+
+        const user = await User.findById(userId);
+        if (user.dominioDirectivoTestInicial.estrategico.sectionScore != "Undefined"){
+            res.status(206).send(`No permitido.`)
+        } else{
+            await User.findByIdAndUpdate(userId, {
+                "dominioDirectivoTestInicial.estrategico.question1": question1,
+                "dominioDirectivoTestInicial.estrategico.sectionScore": value,
+            })
+            res.status(200).send(`Se actualizo el usuario con éxito.`)
+        }
     } catch (error) {
         console.log(error);
         if (error.name === 'JsonWebTokenError') {
@@ -151,26 +158,31 @@ const testSection2 = async (req, res) => {
             total = Math.floor(Math.random() * 6) + 5;
         }
 
-        await User.findByIdAndUpdate(userId, {
-            "dominioDirectivoTestInicial.conceptos.question1": question1,
-            "dominioDirectivoTestInicial.conceptos.question2": question2,
-            "dominioDirectivoTestInicial.conceptos.question3": question3,
-            "dominioDirectivoTestInicial.conceptos.question4": question4,
-            "dominioDirectivoTestInicial.conceptos.question5": question5,
-            "dominioDirectivoTestInicial.conceptos.question6": question6,
-            "dominioDirectivoTestInicial.conceptos.question7": question7,
-            "dominioDirectivoTestInicial.conceptos.question8": question8,
-            "dominioDirectivoTestInicial.conceptos.question9": question9,
-            "dominioDirectivoTestInicial.conceptos.question10": question10,
-            "dominioDirectivoTestInicial.conceptos.question11": question11,
-            "dominioDirectivoTestInicial.conceptos.question12": question12,
-            "dominioDirectivoTestInicial.conceptos.question13": question13,
-            "dominioDirectivoTestInicial.conceptos.question14": question14,
-            "dominioDirectivoTestInicial.conceptos.question15": question15,
-            "dominioDirectivoTestInicial.conceptos.question16": question16,
-            "dominioDirectivoTestInicial.conceptos.sectionScore": total,
-        })
-        res.status(200).send(`Se actualizo el usuario con éxito.`)
+        const user = await User.findById(userId);
+        if (user.dominioDirectivoTestInicial.conceptos.sectionScore != "Undefined"){
+            res.status(206).send(`No permitido.`)
+        } else{
+            await User.findByIdAndUpdate(userId, {
+                "dominioDirectivoTestInicial.conceptos.question1": question1,
+                "dominioDirectivoTestInicial.conceptos.question2": question2,
+                "dominioDirectivoTestInicial.conceptos.question3": question3,
+                "dominioDirectivoTestInicial.conceptos.question4": question4,
+                "dominioDirectivoTestInicial.conceptos.question5": question5,
+                "dominioDirectivoTestInicial.conceptos.question6": question6,
+                "dominioDirectivoTestInicial.conceptos.question7": question7,
+                "dominioDirectivoTestInicial.conceptos.question8": question8,
+                "dominioDirectivoTestInicial.conceptos.question9": question9,
+                "dominioDirectivoTestInicial.conceptos.question10": question10,
+                "dominioDirectivoTestInicial.conceptos.question11": question11,
+                "dominioDirectivoTestInicial.conceptos.question12": question12,
+                "dominioDirectivoTestInicial.conceptos.question13": question13,
+                "dominioDirectivoTestInicial.conceptos.question14": question14,
+                "dominioDirectivoTestInicial.conceptos.question15": question15,
+                "dominioDirectivoTestInicial.conceptos.question16": question16,
+                "dominioDirectivoTestInicial.conceptos.sectionScore": total,
+            })
+            res.status(200).send(`Se actualizo el usuario con éxito.`)
+        }
     } catch (error) {
         console.log(error);
         if (error.name === 'JsonWebTokenError') {
@@ -223,20 +235,25 @@ const testSection3 = async (req, res) => {
             total = Math.floor(Math.random() * 6) + 5;
         }
 
-        await User.findByIdAndUpdate(userId, {
-            "dominioDirectivoTestInicial.mercado.question1": question1,
-            "dominioDirectivoTestInicial.mercado.question1Justification": question1Justification,
-            "dominioDirectivoTestInicial.mercado.question2": question2,
-            "dominioDirectivoTestInicial.mercado.question2Justification": question2Justification,
-            "dominioDirectivoTestInicial.mercado.question3": question3,
-            "dominioDirectivoTestInicial.mercado.question3Justification": question3Justification,
-            "dominioDirectivoTestInicial.mercado.question4": question4,
-            "dominioDirectivoTestInicial.mercado.question4Justification": question4Justification,
-            "dominioDirectivoTestInicial.mercado.question5": question5,
-            "dominioDirectivoTestInicial.mercado.question5Justification": question5Justification,
-            "dominioDirectivoTestInicial.mercado.sectionScore": total,
-        })
-        res.status(200).send(`Se actualizo el usuario con éxito.`)
+        const user = await User.findById(userId);
+        if (user.dominioDirectivoTestInicial.mercado.sectionScore != "Undefined"){
+            res.status(206).send(`No permitido.`)
+        } else{
+            await User.findByIdAndUpdate(userId, {
+                "dominioDirectivoTestInicial.mercado.question1": question1,
+                "dominioDirectivoTestInicial.mercado.question1Justification": question1Justification,
+                "dominioDirectivoTestInicial.mercado.question2": question2,
+                "dominioDirectivoTestInicial.mercado.question2Justification": question2Justification,
+                "dominioDirectivoTestInicial.mercado.question3": question3,
+                "dominioDirectivoTestInicial.mercado.question3Justification": question3Justification,
+                "dominioDirectivoTestInicial.mercado.question4": question4,
+                "dominioDirectivoTestInicial.mercado.question4Justification": question4Justification,
+                "dominioDirectivoTestInicial.mercado.question5": question5,
+                "dominioDirectivoTestInicial.mercado.question5Justification": question5Justification,
+                "dominioDirectivoTestInicial.mercado.sectionScore": total,
+            })
+            res.status(200).send(`Se actualizo el usuario con éxito.`)
+        }
     } catch (error) {
         console.log(error);
         if (error.name === 'JsonWebTokenError') {
@@ -339,33 +356,38 @@ const testSection4 = async (req, res) => {
             total = Math.floor(Math.random() * 6) + 5;
         }
 
-        await User.findByIdAndUpdate(userId, {
-            "dominioDirectivoTestInicial.emprendimiento.question1": question1,
-            "dominioDirectivoTestInicial.emprendimiento.question1Justification": question1Justification,
-            "dominioDirectivoTestInicial.emprendimiento.question2": question2,
-            "dominioDirectivoTestInicial.emprendimiento.question2Justification": question2Justification,
-            "dominioDirectivoTestInicial.emprendimiento.question3": question3,
-            "dominioDirectivoTestInicial.emprendimiento.question3Justification": question3Justification,
-            "dominioDirectivoTestInicial.emprendimiento.question4": question4,
-            "dominioDirectivoTestInicial.emprendimiento.question4Justification": question4Justification,
-            "dominioDirectivoTestInicial.emprendimiento.question5": question5,
-            "dominioDirectivoTestInicial.emprendimiento.question5Justification": question5Justification,
-            "dominioDirectivoTestInicial.emprendimiento.question6": question6,
-            "dominioDirectivoTestInicial.emprendimiento.question6Justification": question6Justification,
-            "dominioDirectivoTestInicial.emprendimiento.question7": question7,
-            "dominioDirectivoTestInicial.emprendimiento.question8": question8,
-            "dominioDirectivoTestInicial.emprendimiento.question9": question9,
-            "dominioDirectivoTestInicial.emprendimiento.question10": question10,
-            "dominioDirectivoTestInicial.emprendimiento.question11": question11,
-            "dominioDirectivoTestInicial.emprendimiento.question12": question12,
-            "dominioDirectivoTestInicial.emprendimiento.question13": question13,
-            "dominioDirectivoTestInicial.emprendimiento.question14": question14,
-            "dominioDirectivoTestInicial.emprendimiento.question14Justification": question14Justification,
-            "dominioDirectivoTestInicial.emprendimiento.question15": question15,
-            "dominioDirectivoTestInicial.emprendimiento.question15Justification": question15Justification,
-            "dominioDirectivoTestInicial.emprendimiento.sectionScore": total,
-        })
-        res.status(200).send(`Se actualizo el usuario con éxito.`)
+        const user = await User.findById(userId);
+        if (user.dominioDirectivoTestInicial.emprendimiento.sectionScore != "Undefined"){
+            res.status(206).send(`No permitido.`)
+        } else{
+            await User.findByIdAndUpdate(userId, {
+                "dominioDirectivoTestInicial.emprendimiento.question1": question1,
+                "dominioDirectivoTestInicial.emprendimiento.question1Justification": question1Justification,
+                "dominioDirectivoTestInicial.emprendimiento.question2": question2,
+                "dominioDirectivoTestInicial.emprendimiento.question2Justification": question2Justification,
+                "dominioDirectivoTestInicial.emprendimiento.question3": question3,
+                "dominioDirectivoTestInicial.emprendimiento.question3Justification": question3Justification,
+                "dominioDirectivoTestInicial.emprendimiento.question4": question4,
+                "dominioDirectivoTestInicial.emprendimiento.question4Justification": question4Justification,
+                "dominioDirectivoTestInicial.emprendimiento.question5": question5,
+                "dominioDirectivoTestInicial.emprendimiento.question5Justification": question5Justification,
+                "dominioDirectivoTestInicial.emprendimiento.question6": question6,
+                "dominioDirectivoTestInicial.emprendimiento.question6Justification": question6Justification,
+                "dominioDirectivoTestInicial.emprendimiento.question7": question7,
+                "dominioDirectivoTestInicial.emprendimiento.question8": question8,
+                "dominioDirectivoTestInicial.emprendimiento.question9": question9,
+                "dominioDirectivoTestInicial.emprendimiento.question10": question10,
+                "dominioDirectivoTestInicial.emprendimiento.question11": question11,
+                "dominioDirectivoTestInicial.emprendimiento.question12": question12,
+                "dominioDirectivoTestInicial.emprendimiento.question13": question13,
+                "dominioDirectivoTestInicial.emprendimiento.question14": question14,
+                "dominioDirectivoTestInicial.emprendimiento.question14Justification": question14Justification,
+                "dominioDirectivoTestInicial.emprendimiento.question15": question15,
+                "dominioDirectivoTestInicial.emprendimiento.question15Justification": question15Justification,
+                "dominioDirectivoTestInicial.emprendimiento.sectionScore": total,
+            })
+            res.status(200).send(`Se actualizo el usuario con éxito.`)
+        }
     } catch (error) {
         console.log(error);
         if (error.name === 'JsonWebTokenError') {
@@ -464,18 +486,23 @@ const testSection5 = async (req, res) => {
             total = Math.floor(Math.random() * 6) + 5;
         }
 
-        await User.findByIdAndUpdate(userId, {
-            "dominioDirectivoTestInicial.habilidadesDirectivas.question1": question1,
-            "dominioDirectivoTestInicial.habilidadesDirectivas.question2": question2,
-            "dominioDirectivoTestInicial.habilidadesDirectivas.question3": question3,
-            "dominioDirectivoTestInicial.habilidadesDirectivas.question4": question4,
-            "dominioDirectivoTestInicial.habilidadesDirectivas.question5": question5,
-            "dominioDirectivoTestInicial.habilidadesDirectivas.question6": question6,
-            "dominioDirectivoTestInicial.habilidadesDirectivas.question7": question7,
-            "dominioDirectivoTestInicial.habilidadesDirectivas.question8": question8,
-            "dominioDirectivoTestInicial.habilidadesDirectivas.sectionScore": total,
-        })
-        res.status(200).send(`Se actualizo el usuario con éxito.`)
+        const user = await User.findById(userId);
+        if (user.dominioDirectivoTestInicial.habilidadesDirectivas.sectionScore != "Undefined"){
+            res.status(206).send(`No permitido.`)
+        } else{
+            await User.findByIdAndUpdate(userId, {
+                "dominioDirectivoTestInicial.habilidadesDirectivas.question1": question1,
+                "dominioDirectivoTestInicial.habilidadesDirectivas.question2": question2,
+                "dominioDirectivoTestInicial.habilidadesDirectivas.question3": question3,
+                "dominioDirectivoTestInicial.habilidadesDirectivas.question4": question4,
+                "dominioDirectivoTestInicial.habilidadesDirectivas.question5": question5,
+                "dominioDirectivoTestInicial.habilidadesDirectivas.question6": question6,
+                "dominioDirectivoTestInicial.habilidadesDirectivas.question7": question7,
+                "dominioDirectivoTestInicial.habilidadesDirectivas.question8": question8,
+                "dominioDirectivoTestInicial.habilidadesDirectivas.sectionScore": total,
+            })
+            res.status(200).send(`Se actualizo el usuario con éxito.`)
+        }
     } catch (error) {
         console.log(error);
         if (error.name === 'JsonWebTokenError') {
@@ -532,20 +559,29 @@ const testSection6 = async (req, res) => {
             total = Math.floor(Math.random() * 6) + 5;
         }
 
-        await User.findByIdAndUpdate(userId, {
-            "dominioDirectivoTestInicial.habilidadesDigitales.question1": question1,
-            "dominioDirectivoTestInicial.habilidadesDigitales.question1Justification": question1Justification,
-            "dominioDirectivoTestInicial.habilidadesDigitales.question2": question2,
-            "dominioDirectivoTestInicial.habilidadesDigitales.question3": question3,
-            "dominioDirectivoTestInicial.habilidadesDigitales.question3Justification": question3Justification,
-            "dominioDirectivoTestInicial.habilidadesDigitales.question4": question4,
-            "dominioDirectivoTestInicial.habilidadesDigitales.question4Justification": question4Justification,
-            "dominioDirectivoTestInicial.habilidadesDigitales.question5": question5,
-            "dominioDirectivoTestInicial.habilidadesDigitales.question5Justification": question5Justification,
-            "dominioDirectivoTestInicial.habilidadesDigitales.sectionScore": total,
-        })
-        totalPoints(userId)
-        res.status(200).send(`Se actualizo el usuario con éxito.`)
+        const questionnaire1StartEnabled = false
+
+        const user = await User.findById(userId);
+        if (user.dominioDirectivoTestInicial.habilidadesDigitales.sectionScore != "Undefined"){
+            res.status(206).send(`No permitido.`)
+        } else{
+            await User.findByIdAndUpdate(userId, {
+                questionnaire1StartEnabled,
+                "dominioDirectivoTestInicial.habilidadesDigitales.question1": question1,
+                "dominioDirectivoTestInicial.habilidadesDigitales.question1Justification": question1Justification,
+                "dominioDirectivoTestInicial.habilidadesDigitales.question2": question2,
+                "dominioDirectivoTestInicial.habilidadesDigitales.question3": question3,
+                "dominioDirectivoTestInicial.habilidadesDigitales.question3Justification": question3Justification,
+                "dominioDirectivoTestInicial.habilidadesDigitales.question4": question4,
+                "dominioDirectivoTestInicial.habilidadesDigitales.question4Justification": question4Justification,
+                "dominioDirectivoTestInicial.habilidadesDigitales.question5": question5,
+                "dominioDirectivoTestInicial.habilidadesDigitales.question5Justification": question5Justification,
+                "dominioDirectivoTestInicial.habilidadesDigitales.sectionScore": total,
+            })
+            totalPoints(userId)
+            verifyRanking()
+            res.status(200).send(`Se actualizo el usuario con éxito.`)
+        }
     } catch (error) {
         console.log(error);
         if (error.name === 'JsonWebTokenError') {
@@ -570,6 +606,7 @@ const totalPoints = async (userId) =>{
             const section6Score = parseInt(user.dominioDirectivoTestInicial.habilidadesDigitales.sectionScore)
             const total = Math.floor((section1Score + section2Score + section3Score + section4Score + section5Score + section6Score)/6)
             await User.findByIdAndUpdate(userId, {
+                totalScore: total,
                 "dominioDirectivoTestInicial.totalScore": total,
             })
         } catch (error) {
@@ -577,5 +614,21 @@ const totalPoints = async (userId) =>{
         }
     }
 }
+
+const verifyRanking = async () => {
+    try {
+        const users = await User.find({ status: 'active', totalScore: { $ne: 0 } }).sort({ totalScore: -1 });
+        for (let i = 0; i < users.length; i++) {
+            const user = users[i];
+            await User.findByIdAndUpdate(user._id, {
+            rankingPosition: i + 1,
+            });
+        }
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
+verifyRanking()
 
 module.exports = { testSection1, testSection2, testSection3, testSection4, testSection5, testSection6 }

@@ -81,5 +81,36 @@ const getPhoto = async (req, res) => {
   }
 };
 
+const getPhotoId = async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(401).json({ message: 'No se encontró el token.' });
+    } else {
+      const user = await User.findById(id);
+      if (!user) {
+        return res.status(404).json({ message: 'El usuario no existe.' });
+      } else {
+        const gfs = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+          bucketName: 'uploads'
+        });
+        const files = await gfs.find({ 'metadata.userId.userId': user._id.toString() }).sort({ uploadDate: -1 }).toArray();
+        if (files.length > 0) {
+          const file = files[0];
+          const stream = gfs.openDownloadStream(file._id);
+          res.set('Content-Type', file.contentType);
+          res.set('Content-Disposition', `attachment; filename=${file.filename}`);
+          stream.pipe(res);
+        } else {
+          res.status(206).json({ message: 'No hay ninguna foto.' });
+        }
+      }
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(206).json({ error: 'Ocurrió un error inesperado.' });
+  }
+};
 
-module.exports = { uploadFile, getPhoto };
+
+module.exports = { uploadFile, getPhoto, getPhotoId };

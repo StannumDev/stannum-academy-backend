@@ -1,7 +1,9 @@
 const User = require('../model/users');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 const nodemailer = require("nodemailer");
 const moment = require('moment');
+const bcrypt = require('bcrypt');
 require('dotenv').config();
 const userTokenSecret = process.env.CLAVE_USER
 const adminTokenSecret = process.env.CLAVE_ADMIN
@@ -14,9 +16,28 @@ const getUser = async (req, res) => {
     const users = await User.find({})
     res.status(200).send(users);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(206).json({ error: error.message });
   }
 }
+
+const verifyRanking = async () => {
+  try {
+    const users = await User.find({ status: 'active', totalScore: { $ne: 0 } }).sort({ totalScore: -1 });
+    for (let i = 0; i < users.length; i++) {
+      const user = users[i];
+      await User.findByIdAndUpdate(user._id, {
+        rankingPosition: i + 1,
+      });
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+}
+
+// RANKING DAILY UPDATE
+setInterval(() => {
+  verifyRanking();
+}, 24 * 60 * 60 * 1000);
 
 // GET USER CON TOKEN:
 const getUserEspecifico = async (req, res) => {
@@ -33,48 +54,53 @@ const getUserEspecifico = async (req, res) => {
       }
       res.status(200).json(user);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(206).json({ error: error.message });
     }
   } catch (error) {
     console.log(error);
     if (error.name === 'JsonWebTokenError') {
-      res.status(400).json({ message: 'Token invalido.' });
+      res.status(206).json({ message: 'Token invalido.' });
     } else if (error.name === 'TokenExpiredError') {
-      res.status(400).json({ message: 'Su sesión expiro.' });
+      res.status(206).json({ message: 'Su sesión expiro.' });
     } else {
-      res.status(500).json({ message: 'Error en el servidor.' });
+      res.status(206).json({ message: 'Error en el servidor.' });
     }
   }
 };
 
 // GET USER CON ID DE MONGOOSE:
-// const getUserEspecifico = async (req, res) => {
-//     const { id } = req.params;
-//     if (!mongoose.Types.ObjectId.isValid(id)) {
-//         return res.status(206).send('Invalid user ID');
-//     }
-//       try {
-//         const user = await User.findById(id);
-//         res.status(200).send(user);
-//       } catch (error) {
-//         res.status(206).json({ error: error.message });
-//       }
-// }
+const getUserEspecificoId = async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(206).send('Invalid user ID');
+  } else {
+    try {
+      const user = await User.findById(id);
+      res.status(200).send(user);
+    } catch (error) {
+      res.status(206).json({ error: error.message });
+    }
+  }
+}
 
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await User.findOne({ email });
     if (user) {
-      if (password === user.password && user.role === 'admin') {
-        const adminToken = jwt.sign({ userId: user._id }, adminTokenSecret, { expiresIn: '1d' });
-        const token = jwt.sign({ userId: user._id }, userTokenSecret, { expiresIn: '7d' });
-        return res.status(200).json({ adminToken, token });
-      } else if (password === user.password) {
-        const token = jwt.sign({ userId: user._id }, userTokenSecret, { expiresIn: '7d' });
-        return res.status(200).json({ token });
+      if (user.status === 'active') {
+        if (bcrypt.compareSync(password, user.password) && user.role === 'admin') {
+          const adminToken = jwt.sign({ userId: user._id }, adminTokenSecret, { expiresIn: '1d' });
+          const token = jwt.sign({ userId: user._id }, userTokenSecret, { expiresIn: '1d' });
+          return res.status(200).json({ adminToken, token });
+        } else if (bcrypt.compareSync(password, user.password)) {
+          const token = jwt.sign({ userId: user._id }, userTokenSecret, { expiresIn: '1d' });
+          return res.status(200).json({ token });
+        } else {
+          return res.status(206).json({ message: 'Datos incorrectos.' });
+        }
       } else {
-        return res.status(206).json({ message: 'Datos incorrectos.' });
+        return res.status(206).json({ message: 'Esta cuenta fue suspendida.' });
       }
     } else {
       return res.status(206).json({ message: 'Datos incorrectos.' });
@@ -95,6 +121,34 @@ const deleteUser = async (req, res) => {
   }
 }
 
+
+const changeUserStatus = async (req, res) => {
+  const { id } = req.body
+
+  let newStatus = ""
+
+  if (id) {
+    try {
+      const user = await User.findById(id);
+
+      if (user.status === "active"){
+        newStatus = "suspended"
+      } else if (user.status === "suspended"){
+        newStatus = "active"
+      }
+
+      await User.findByIdAndUpdate(id, {
+        status: newStatus,
+      })
+      res.status(200).send(`Se actualizo el usuario con éxito.`)
+    } catch (error) {
+      res.status(206).send(`Ocurrió un error inesperado.`)
+    }
+  } else{
+    res.status(206).send(`Ocurrió un error inesperado.`)
+  }
+};
+
 const createUser = async (req, res) => {
   const { email } = req.body;
   const emailPattern = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/i;
@@ -107,6 +161,8 @@ const createUser = async (req, res) => {
     res.status(206).json({ error: 'Este email ya está en uso.' });
   } else {
     const password = generateRandomPassword();
+    const saltRound = 13; 
+    const passwordEncripted = bcrypt.hashSync(password, saltRound);
     const role = 'member';
     const status = 'active';
     const startDate = moment().format('DD/MM/YYYY');
@@ -118,7 +174,7 @@ const createUser = async (req, res) => {
       name: "Undefined",
       surname: "Undefined",
       email,
-      password,
+      password: passwordEncripted,
       venture: "Undefined",
       territory: "Undefined",
       birthdate: "Undefined",
@@ -376,13 +432,44 @@ const sendEmailNewUser = async ( email, password ) => {
 
 const patchUser = async (req, res) => {
   const { id, name, surname, venture, territory, birthdate, biography } = req.body
+  let valueName = ('Undefined')
+  let valueSurname = ('Undefined')
+  let valueVenture = ('Undefined')
+  let valueTerritory = ('Undefined')
+  let valueBirthdate = ('Undefined')
+  let valueBiography = ('Undefined')
+
+  if (name){
+    valueName = name
+  } 
+
+  if (surname){
+    valueSurname = surname
+  } 
+
+  if (venture){
+    valueVenture = venture
+  } 
+
+  if (territory){
+    valueTerritory = territory
+  } 
+
+  if (biography){
+    valueBiography = biography
+  } 
+
+  if (birthdate != 'undefined/undefined/'){
+    valueBirthdate = birthdate
+  } 
+
   await User.findByIdAndUpdate(id, {
-    name,
-    surname,
-    venture,
-    territory,
-    birthdate,
-    biography
+    name: valueName,
+    surname: valueSurname,
+    venture: valueVenture,
+    territory: valueTerritory,
+    birthdate: valueBirthdate,
+    biography: valueBiography
   })
   res.status(200).send(`Se actualizo el usuario con éxito.`)
 };
@@ -393,7 +480,7 @@ const passwordRecovery = async (req, res) => {
     const user = await User.findOne({"email": email})
     if (user) {
       const tokenNormal = jwt.sign({ userId: user._id }, passwordTokenSecret, { expiresIn: "1h" })
-      const token = encodeURIComponent(tokenNormal);
+      const token = Buffer.from(JSON.stringify(tokenNormal)).toString('base64');
       let transporter = nodemailer.createTransport({
         host: "smtp.hostinger.com",
         port: 465,
@@ -436,29 +523,34 @@ const passwordRecovery = async (req, res) => {
   }
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Ocurrió un error inesperado." });
+    res.status(206).json({ message: "Ocurrió un error inesperado." });
   }
 };
 
 const changePassword = async (req, res) => {
   try {
     const { token, password } = req.body;
-    const decodedToken = decodeURIComponent(token);
+
+    const decodedToken = JSON.parse(Buffer.from(token, 'base64').toString());
     const { userId } = jwt.verify(decodedToken, passwordTokenSecret);
+
+    const saltRound = 13; 
+    const passwordEncripted = bcrypt.hashSync(password, saltRound);
+
     await User.findByIdAndUpdate(userId, { 
-      password 
+      password: passwordEncripted
     });
     res.status(200).json('La contraseña se cambio con éxito.');
   } catch (error) {
     console.log(error);
     if (error.name === 'JsonWebTokenError') {
-      res.status(400).json({ message: 'El enlace es invalido.' });
+      res.status(206).json({ message: 'El enlace es invalido.' });
     } else if (error.name === 'TokenExpiredError') {
-      res.status(400).json({ message: 'El enlace expiró' });
+      res.status(206).json({ message: 'El enlace expiró' });
     } else {
-      res.status(500).json({ message: 'Error del servidor' });
+      res.status(206).json({ message: 'Error del servidor' });
     }
   }
 };
 
-module.exports = { createUser, getUser, deleteUser, patchUser, getUserEspecifico, loginUser, passwordRecovery, changePassword}
+module.exports = { createUser, getUser, deleteUser, patchUser, getUserEspecifico, getUserEspecificoId, loginUser, passwordRecovery, changePassword, changeUserStatus}
