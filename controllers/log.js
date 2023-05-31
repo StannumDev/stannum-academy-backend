@@ -23,6 +23,7 @@ const createLog = async (description) => {
       });
   
       await newLog.save();
+      console.log('log creado');
     } catch (error) {
       console.log({ error: error.message });
     }
